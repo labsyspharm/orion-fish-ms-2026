@@ -10,6 +10,8 @@ filter(ROI_FISH_ratio_filtered, is.na(ratio_MYC_FISH)) %>% View()
 
 #now based on ratio, I categorised diploid and aneuploid
 
+## other ways to categorise, we can do it here############
+
 
 ROI_FISH_scoring <- ROI_FISH_ratio_filtered %>%
   mutate(
@@ -64,26 +66,6 @@ calculate_50um_neighborhoods <- function(data, distance = 50) {
         )
       summary_stats
     }, .progress = TRUE)
-    # # For each cell, find neighbors within 50µm
-    # neighborhood_info <- lapply(1:nrow(data_slide), function(i) {
-    #   cur_neighbor_idx <- setdiff(neighbor_indices[[i]], i)
-    #   # Get ALL neighbors
-    #   neighbors <- data_slide[cur_neighbor_idx, ]
-    #   
-    #   summary_stats <- neighbors %>%
-    #     summarize(
-    #       across(
-    #         where(is.logical),
-    #         .fns = list(
-    #           count = sum,
-    #           pct = \(x) mean(x) * 100
-    #         )
-    #       ),
-    #       total_neighbors = length(cur_neighbor_idx)
-    #     )
-    #   summary_stats
-    # })
-    
     message("Assembling stats...")
     neighborhood_df <- bind_rows(
       set_names(neighborhood_info, data_slide$CellID),
@@ -121,28 +103,6 @@ write_excel_csv(data_with_neighborhoods_1,"data_with_neighborhoods_LSP18316.csv"
 write_excel_csv(data_with_neighborhoods_2,"data_with_neighborhoods_LSP19422.csv")
 write_excel_csv(data_with_neighborhoods_3,"data_with_neighborhoods_LSP18304.csv")
 
-#colSums(is.na(data_with_neighborhoods)) #checking columns have NA and how many
-
-
-# NaNs in the _pct columns are a result of cells without neighbors within 50um # although it shows zero
-# but there are very few cells like that, 124 in data_with_neighborhoods_2,
-# filter them out
-
-
-data_with_neighborhoods <- data_with_neighborhoods %>%
-  filter(total_neighbors > 0) %>%
-  drop_na()
-
-write_csv(data_with_neighborhoods, "data_with_neighborhoods_allSTIC_v2.csv")
-
-
-################################
-sum(is.na(data_with_neighborhoods$ratio_CCNE1_FISH))
-sum(is.na(data_with_neighborhoods$ratio_MYC_FISH))
-####################
-
-
-
 # Only for single slide
 
 read_csv("data_with_neighborhoods_LSP18304.csv")
@@ -157,6 +117,18 @@ data_with_neighborhoods <- bind_rows(
 )
 
 write_excel_csv(data_with_neighborhoods,"data_with_neighborhoods_all_STICs.csv")
+
+data_with_neighborhoods <- data_with_neighborhoods %>%
+  filter(total_neighbors > 0) %>%
+  drop_na()
+
+write_csv(data_with_neighborhoods, "data_with_neighborhoods_allSTIC_v2.csv")
+
+
+################################
+sum(is.na(data_with_neighborhoods$ratio_CCNE1_FISH))
+sum(is.na(data_with_neighborhoods$ratio_MYC_FISH))
+####################
 
 
 # marker/neighborhood combinations to test
@@ -208,4 +180,5 @@ glm_res_df_3 <- glm_res %>%
   )
 
 write_csv(glm_res_df_3, "glm_allslides_onlyFTs_summary.csv")
+
 
