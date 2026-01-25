@@ -1,4 +1,31 @@
 
+library(tidyverse)
+library(seriation)
+library(dplyr)
+library(ggplot2)
+library(ggbeeswarm)
+library(powerjoin)
+library(tidyr)
+library(plotly)
+library(ggfortify)
+library(GGally)
+library(hrbrthemes)
+library(viridis)
+library(ggridges)
+library(vioplot)
+library(ggpubr)
+library(rstatix)
+library(emmeans)
+library(tidybayes)
+library(readr)
+library(readxl)
+library(lme4)
+library(lmerTest)
+library(sf)
+library(progress)
+library(patchwork)
+library(furrr)
+library(DHARMa)
 
 #if we have to start from the file: we can start from the ratio calculated then define the category: 
 
@@ -180,5 +207,6 @@ glm_res_df_3 <- glm_res %>%
   )
 
 write_csv(glm_res_df_3, "glm_allslides_onlyFTs_summary.csv")
+
 
 
