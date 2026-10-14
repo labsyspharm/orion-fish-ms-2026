@@ -1,4 +1,5 @@
 import argparse
+import pathlib
 
 import matplotlib.cm
 import matplotlib.pyplot as plt
@@ -24,11 +25,16 @@ def mask_to_contour(mask):
     )
 
 
-def mapping_indexer(df, column_name=None, missing_value=0, bg_value=0):
+# nuclei without any spot are not in the counts table; render them as
+# missing_value (1, i.e. count 0 + 1) so every nucleus is visible
+MISSING_VALUE = 1
+
+
+def mapping_indexer(df, column_name=None, missing_value=MISSING_VALUE, bg_value=0):
     if column_name is None:
         assert df.shape[1] == 1
         column_name = df.columns[0]
-    indexer = np.full(df.index.max() + 100, fill_value=missing_value, dtype="uint16")
+    indexer = np.full(df.index.max() + 1, fill_value=missing_value, dtype="uint16")
     indexer[df.index.values] = df[column_name].values
     indexer[0] = bg_value
     return indexer
@@ -38,8 +44,12 @@ def map_mask_labels(mask_pyramid, df_mapper):
     for ll in mask_pyramid:
         assert ll.ndim == 2
 
-    def recolor(mask, indexer):
-        return indexer[mask].astype(indexer.dtype)
+    def recolor(mask, indexer, missing_value=MISSING_VALUE):
+        # labels beyond the indexer are nuclei absent from the counts table
+        out = np.full(mask.shape, missing_value, dtype=indexer.dtype)
+        valid = mask < len(indexer)
+        out[valid] = indexer[mask[valid]]
+        return out
 
     mapped_masks = {}
     for kk in tqdm.tqdm(df_mapper.columns):
